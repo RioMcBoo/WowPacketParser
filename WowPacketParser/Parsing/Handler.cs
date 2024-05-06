@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using WowPacketParser.Enums;
 using WowPacketParser.Enums.Version;
@@ -40,41 +41,51 @@ namespace WowPacketParser.Parsing
                 if (!type.IsAbstract || !type.IsPublic)
                     continue;
 
-                var methods = type.GetMethods();
+                var methods = type.GetMethods().Where(m =>
+                {
+                    var parameters = m.GetParameters();
+                    return parameters.Length > 0 && parameters[0].ParameterType == typeof(Packet);
+                });
 
                 foreach (MethodInfo method in methods)
                 {
                     if (!method.IsPublic)
                         continue;
 
-                    var attrs = (ParserAttribute[])method.GetCustomAttributes(typeof(ParserAttribute), false);
+                    var parseAttrs = method.GetCustomAttributes(typeof(ParserAttribute), false).Where(x =>
+                        ((ParserAttribute)x).Opcode != Opcode.NULL_OPCODE);        
 
-                    if (attrs.Length <= 0)
-                        continue;
+                    List<KeyValuePair<ClientVersionBuild, Opcode>> pairs = new();
 
-                    var parms = method.GetParameters();
-
-                    if (parms.Length <= 0)
-                        continue;
-
-                    if (parms[0].ParameterType != typeof(Packet))
-                        continue;
-
-                    foreach (ParserAttribute attr in attrs)
+                    foreach (ParserAttribute attr in parseAttrs)
                     {
-                        Opcode opc = attr.Opcode;
-                        if (opc == Opcode.NULL_OPCODE)
-                            continue;
+                        if (!attr.OnlyForSpecificBuild)
+                        {
+                            pairs.Add(new KeyValuePair<ClientVersionBuild, Opcode>(build, attr.Opcode));
+                        }
 
-                        var key = new KeyValuePair<ClientVersionBuild, Opcode>(build, opc);
+                        var buildMatchAttrs = method.GetCustomAttributes(typeof(BuildMatchAttribute), false).Where(x =>
+                        ((BuildMatchAttribute)x).BuildVersion != ClientVersionBuild.None);
 
+                        foreach (BuildMatchAttribute buildMatch in buildMatchAttrs)
+                        {
+                            pairs.Add(new KeyValuePair<ClientVersionBuild, Opcode>(buildMatch.BuildVersion, attr.Opcode));
+                        }
+                    }
+
+                    if (pairs.Count <= 0)
+                        continue;
+
+                    foreach (var key in pairs)
+                    {
                         var del = (Action<Packet>)Delegate.CreateDelegate(typeof(Action<Packet>), method);
 
                         if (handlers.TryGetValue(key, out var existingHandler))
                         {
-                            Direction direction = attr.Opcode.ToString()[0] == 'S' ? Direction.ServerToClient : Direction.ClientToServer;
+                            Direction direction = key.Value.ToString()[0] == 'S' ? Direction.ServerToClient : Direction.ClientToServer;
+
                             Trace.WriteLine(
-                                $"Error: (Build: {ClientVersion.Build}) tried to overwrite delegate for opcode {Opcodes.GetOpcode(attr.Opcode, direction)} ({attr.Opcode});"
+                                $"Error: (Build: {ClientVersion.Build}) tried to overwrite delegate for opcode {Opcodes.GetOpcode(key.Value, direction)} ({key.Value});"
                                 + $" new handler: {del.Method.DeclaringType}.{del.Method.Name};"
                                 + $" old handler: {existingHandler.Method.DeclaringType}.{existingHandler.Method.Name}");
                             continue;
@@ -98,7 +109,7 @@ namespace WowPacketParser.Parsing
                 return;
 
             var opcode = Opcodes.GetOpcode(packet.Opcode, packet.Direction);
-            var key = new KeyValuePair<ClientVersionBuild, Opcode>(ClientVersion.VersionDefiningBuild, opcode);
+            var key = new KeyValuePair<ClientVersionBuild, Opcode>(ClientVersion.Build, opcode);
 
             Action<Packet> handler;
             var hasHandler = VersionHandlers.TryGetValue(key, out handler);
