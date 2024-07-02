@@ -84,5 +84,27 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers.V3_4_3_54261
             for (int i = 0; i < eventsCount; i++)
                 ReadCalendarSendCalendarEventInfo(packet, "Events", i);
         }
+
+        [BuildMatch(ClientVersionBuild.V3_4_3_54261)]
+        [Parser(Opcode.SMSG_CALENDAR_EVENT_UPDATED_ALERT, true)]
+        public static void HandleCalendarEventUpdateAlert(Packet packet)
+        {
+            packet.ReadUInt64("EventClubID");
+            packet.ReadUInt64("EventID");
+            packet.ReadPackedTime("OriginalDate");
+            packet.ReadPackedTime("Date");
+            packet.ReadUInt32("LockDate");
+            packet.ReadUInt32E<CalendarFlag>("Flags");
+            packet.ReadUInt32("TextureID");
+            packet.ReadByte("EventType");
+
+            packet.ResetBitReader();
+            var eventNameLen = packet.ReadBits(8);
+            var descLen = packet.ReadBits(11);
+            packet.ReadBit("ClearPending");
+
+            packet.ReadWoWString("EventName", eventNameLen);
+            packet.ReadWoWString("Description", descLen);
+        }
     }
 }
