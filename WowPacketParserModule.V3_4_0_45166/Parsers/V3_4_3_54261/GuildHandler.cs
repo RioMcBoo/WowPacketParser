@@ -7,6 +7,55 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers.V3_4_3_54261
     public static class GuildHandler
     {
         [BuildMatch(ClientVersionBuild.V3_4_3_54261)]
+        [Parser(Opcode.SMSG_GUILD_BANK_QUERY_RESULTS, true)]
+        public static void HandleGuildBankList(Packet packet)
+        {
+            packet.ReadUInt64("Money");
+            packet.ReadInt32("Tab");
+            packet.ReadInt32("WithdrawalsRemaining");
+
+            var int36 = packet.ReadInt32("TabInfoCount");
+            var int16 = packet.ReadInt32("ItemInfoCount");
+
+            packet.ResetBitReader();
+            packet.ReadBit("FullUpdate");
+
+            for (int i = 0; i < int36; i++)
+            {
+                packet.ReadInt32("TabIndex", i);
+
+                packet.ResetBitReader();
+
+                var bits1 = packet.ReadBits(7);
+                var bits69 = packet.ReadBits(9);
+
+                packet.ReadWoWString("Name", bits1, i);
+                packet.ReadWoWString("Icon", bits69, i);
+            }
+
+            for (int i = 0; i < int16; i++)
+            {
+                packet.ReadInt32("Slot", i);     
+                packet.ReadInt32("Count", i);
+                packet.ReadInt32("EnchantmentID", i);
+                packet.ReadInt32("Charges", i);
+                packet.ReadInt32("OnUseEnchantmentID", i);                
+                packet.ReadInt32("Flags", i);
+                Substructures.ItemHandler.ReadItemInstance(packet, i);
+                
+                packet.ResetBitReader();
+                var int76 = packet.ReadBits("SocketEnchant", 2, i);
+                packet.ReadBit("Locked");
+
+                for (int j = 0; j < int76; j++)
+                {
+                    packet.ReadByte("SocketIndex", i, j);
+                    Substructures.ItemHandler.ReadItemInstance(packet, i, j);
+                }                
+            }            
+        }
+
+        [BuildMatch(ClientVersionBuild.V3_4_3_54261)]
         [Parser(Opcode.SMSG_GUILD_ROSTER, true)]
         public static void HandleGuildRoster(Packet packet)
         {
