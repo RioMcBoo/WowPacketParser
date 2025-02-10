@@ -155,6 +155,20 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers
             return packetSpellData;
         }
 
+        [Parser(Opcode.SMSG_CONVERT_RUNE)]
+        public static void HandleConvertRune(Packet packet)
+        {
+            packet.ReadByte("Start");
+            packet.ReadByte("Count");
+
+            var cooldownCount = packet.ReadUInt32("CooldownCount");
+            for (var i = 0; i < cooldownCount; ++i)
+                packet.ReadByte("Cooldown");
+
+            packet.ReadUInt32("Index");
+            packet.ReadUInt32("New Rune Type");
+        }
+
         [Parser(Opcode.CMSG_CAST_SPELL)]
         public static void HandleCastSpell(Packet packet)
         {
