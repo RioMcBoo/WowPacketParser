@@ -323,5 +323,35 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers
             for (var i = 0; i < spellCount; ++i)
                 ReadLearnedSpellInfo(packet, "ClientLearnedSpellData", i);
         }
+
+        [BuildMatch(ClientVersionBuild.V3_4_1_48340)]
+        [Parser(Opcode.SMSG_SHOW_TRADE_SKILL_RESPONSE)]
+        public static void HandleShowTradeSkillResponse(Packet packet)
+        {
+            packet.ReadPackedGuid128("PlayerGUID");
+
+            packet.ReadInt32<SpellId>("SpellID");
+
+            var int4 = packet.ReadInt32("SkillLineCount");
+            var int20 = packet.ReadInt32("SkillRankCount");
+            var int36 = packet.ReadInt32("SkillMaxRankCount");
+            var int52 = packet.ReadInt32("KnownAbilitySpellCount");
+
+            for (int i = 0; i < int4; i++)
+                packet.ReadInt32("SkillLineIDs", i);
+
+            for (int i = 0; i < int20; i++)
+                packet.ReadInt32("SkillRanks", i);
+
+            for (int i = 0; i < int36; i++)
+                packet.ReadInt32("SkillMaxRanks", i);
+
+            packet.ReadInt32("SkillLine");
+            packet.ReadInt32("SkillRank");
+            packet.ReadInt32("SkillMaxRank");
+
+            for (int i = 0; i < int52; i++)
+                packet.ReadInt32("KnownAbilitySpellIDs", i);
+        }
     }
 }

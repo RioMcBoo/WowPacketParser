@@ -39,6 +39,7 @@ namespace WowPacketParser.Enums.Version.V3_4_1_47014
             { Opcode.SMSG_CHAT, 0x2BAD },
             { Opcode.SMSG_GOSSIP_COMPLETE, 0x2A97 },
             { Opcode.SMSG_GOSSIP_MESSAGE, 0x2A98 },
+            { Opcode.SMSG_SHOW_TRADE_SKILL_RESPONSE, 0x2776 },
             { Opcode.SMSG_PET_SPELLS_MESSAGE, 0x2C25 },
         };
 
