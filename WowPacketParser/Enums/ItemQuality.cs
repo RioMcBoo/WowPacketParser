@@ -2,6 +2,7 @@ namespace WowPacketParser.Enums
 {
     public enum ItemQuality
     {
+        None     = -1,
         Poor      = 0,
         Normal    = 1,
         Uncommon  = 2,
