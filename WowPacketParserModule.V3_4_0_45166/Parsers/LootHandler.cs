@@ -37,7 +37,7 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers
             packet.ReadBits("ItemUiType", 3, indexes);
             packet.ReadBit("CanTradeToTapList", indexes);
 
-            Substructures.ItemHandler.ReadItemInstance251(packet, indexes, "ItemInstance");
+            Substructures.ItemHandler.ReadItemInstance(packet, indexes, "ItemInstance");
 
             packet.ReadUInt32("Quantity", indexes);
             packet.ReadByte("LootItemType", indexes);

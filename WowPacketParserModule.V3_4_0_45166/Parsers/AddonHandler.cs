@@ -21,22 +21,22 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers
                 packet.ReadDynamicString("Version", versionLength - 1, indexes);
         }
 
-        //[Parser(Opcode.CMSG_CHAT_REGISTER_ADDON_PREFIXES)]
-        //public static void HandleChatRegisterAddonPrefixes(Packet packet)
-        //{
-        //    var count = packet.ReadInt32("Count");
+        [Parser(Opcode.CMSG_CHAT_REGISTER_ADDON_PREFIXES, ClientVersionBuild.V3_4_4_59817)]
+        public static void HandleChatRegisterAddonPrefixes(Packet packet)
+        {
+            var count = packet.ReadInt32("Count");
 
-        //    for (var i = 0; i < count; ++i)
-        //    {
-        //        packet.ResetBitReader();
-        //        var lengths = (int)packet.ReadBits(5);
-        //        packet.ReadWoWString("Addon", lengths, i);
-        //    }
-        //}
+            for (var i = 0; i < count; ++i)
+            {
+                packet.ResetBitReader();
+                var lengths = (int)packet.ReadBits(5);
+                packet.ReadWoWString("Addon", lengths, i);
+            }
+        }
 
-        //[Parser(Opcode.CMSG_CHAT_UNREGISTER_ALL_ADDON_PREFIXES)]
-        //public static void HandleAddonZero(Packet packet)
-        //{
-        //}
+        [Parser(Opcode.CMSG_CHAT_UNREGISTER_ALL_ADDON_PREFIXES, ClientVersionBuild.V3_4_4_59817)]
+        public static void HandleAddonZero(Packet packet)
+        {
+        }
     }
 }
