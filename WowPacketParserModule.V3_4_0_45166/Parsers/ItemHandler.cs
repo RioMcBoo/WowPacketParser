@@ -496,14 +496,13 @@ namespace WowPacketParserModule.V3_4_0_45166.Parsers
             packet.ReadPackedGuid128("ItemGUID");
         }
 
-        [Parser(Opcode.CMSG_USE_ITEM)]
+        [Parser(Opcode.CMSG_USE_ITEM, ClientVersionBuild.Zero, ClientVersionBuild.V3_4_4_59817)]
         public static void HandleUseItem(Packet packet)
         {
             var useItem = packet.Holder.ClientUseItem = new();
             useItem.PackSlot = packet.ReadByte("PackSlot");
             useItem.ItemSlot = packet.ReadByte("Slot");
             useItem.CastItem = packet.ReadPackedGuid128("CastItem");
-
             useItem.SpellId = SpellHandler.ReadSpellCastRequest(packet, "Cast");
         }
 
